@@ -68,7 +68,8 @@ ui <- dashboardPage(
                   verbatimTextOutput ("stats"),
                   plotOutput("boxp1"),
                   plotOutput("boxp2"),
-                  plotOutput("boxp3")
+                  plotOutput("boxp3"),
+                  plotOutput("boxp4")
                   ),
               box(width = 4,
                   title = "Szűrések",
@@ -76,8 +77,8 @@ ui <- dashboardPage(
                                      choices =  c(levels(cars_data$brand))),
                   shiny::selectInput(inputId = "model", "Modell:",
                                      choices =  NULL),
-                  shiny::selectInput(inputId = "fuel", "Üzemanyag:",
-                                     choices = NULL),
+                  # shiny::selectInput(inputId = "fuel", "Üzemanyag:",
+                  #                    choices = NULL),
                   shiny::sliderInput("year_filter", "Év:", min = 1980, max = 2020, value = c(1980, 2020), step = 1, sep = ""),
                   shiny::sliderInput("price_filter", "Ár:", min = 0, max = 50e6, value = c(0, 50e6), step = 1e5, sep = " ")
               ))
@@ -162,7 +163,7 @@ server <- function(session,input, output) {
           evjarat <= input$year_filter[2] &
           vetelar >= input$price_filter[1] &
           vetelar <= input$price_filter[2] &
-          uzemanyag == input$fuel &
+          # uzemanyag == input$fuel &
           brand == input$brand &
           modell == input$model
       )
@@ -221,7 +222,7 @@ server <- function(session,input, output) {
       #stat_summary(fun= mean,color="red")
       labs(x="Évjárat",
            y="Átlagos vételár (mFt)",
-           title="A különböző márkák átlagárai évjárat szerint")+
+           title="Az autók átlagárai évjárat szerint")+
       
       theme_classic(base_size = 16, base_line_size = 0.4, base_rect_size = 0.7)+
       theme(legend.position = "none",
@@ -287,12 +288,30 @@ server <- function(session,input, output) {
            title="Autók átlagárai sebességváltó fajtája szerint")+
       theme_classic(base_size = 16, base_line_size = 0.4, base_rect_size = 0.7)+
       theme(legend.position = "none",
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+      stat_summary(fun = mean,
+                   color = "blue")
   })
   
-  #2. Rész 3. Boxplot (Állapot)
+  #2. Rész 3. Boxplot (Üzemanyag)
   
   output$boxp3 <- renderPlot({
+    ggplot(subdata(), aes(uzemanyag,vetelar/1000, fill = uzemanyag)) +
+      geom_boxplot(outlier.shape = NA)+
+      labs(x="Üzemanyag",
+           y="Átlagos vételár (eFt)",
+           title="Autók átlagárai üzemanyag fajtája szerint")+
+      theme_classic(base_size = 16, base_line_size = 0.4, base_rect_size = 0.7)+
+      theme(legend.position = "none",
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+      stat_summary(fun = mean,
+                   color = "blue")
+  })
+  
+  
+  #2. Rész 4. Boxplot (Állapot)
+  
+  output$boxp4 <- renderPlot({
     ggplot(subdata(), aes(allapot,vetelar/1000, fill = allapot)) +
       geom_boxplot(outlier.shape = NA)+
       labs(x="Állapot",
@@ -300,7 +319,9 @@ server <- function(session,input, output) {
            title="Autók átlagárai állapot szerint")+
       theme_classic(base_size = 16, base_line_size = 0.4, base_rect_size = 0.7)+
       theme(legend.position = "none",
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+      stat_summary(fun = mean,
+                   color = "blue")
   })
   
   ### Szűréseknél, hogy ne minden opciót mutasson a legördülő menü:
